@@ -1,12 +1,14 @@
-include ../../../mk/toolchain.mk
+RV32EMU_PATH = /home/beta10/riscv-none-elf-gcc/rv32emu
+
+include $(RV32EMU_PATH)/mk/toolchain.mk
 
 ARCH = -march=rv32izicsr
 LINKER_SCRIPT = linker.ld
 
-EMU ?= ../../../build/rv32emu
+EMU ?= $(RV32EMU_PATH)/build/rv32emu
 
 AFLAGS = -g $(ARCH)
-CFLAGS = -g -march=rv32i_zicsr
+CFLAGS = -g -march=rv32i_zicsr -Os
 LDFLAGS = -T $(LINKER_SCRIPT)
 EXEC = test.elf
 
@@ -15,7 +17,7 @@ AS = $(CROSS_COMPILE)as
 LD = $(CROSS_COMPILE)ld
 OBJDUMP = $(CROSS_COMPILE)objdump
 
-OBJS = start.o main.o perfcounter.o chacha20_asm.o
+OBJS = start.o main.o perfcounter.o hanoi.o
 
 .PHONY: all run dump clean
 
@@ -32,8 +34,8 @@ $(EXEC): $(OBJS) $(LINKER_SCRIPT)
 
 run: $(EXEC)
 	@test -f $(EMU) || (echo "Error: $(EMU) not found" && exit 1)
-	@grep -q "ENABLE_ELF_LOADER=1" ../../../build/.config || (echo "Error: ENABLE_ELF_LOADER=1 not set" && exit 1)
-	@grep -q "ENABLE_SYSTEM=1" ../../../build/.config || (echo "Error: ENABLE_SYSTEM=1 not set" && exit 1)
+	@grep -q "ENABLE_ELF_LOADER=1" $(RV32EMU_PATH)/build/.config || (echo "Error: ENABLE_ELF_LOADER=1 not set" && exit 1)
+	@grep -q "ENABLE_SYSTEM=1" $(RV32EMU_PATH)/build/.config || (echo "Error: ENABLE_SYSTEM=1 not set" && exit 1)
 	$(EMU) $<
 
 dump: $(EXEC)
