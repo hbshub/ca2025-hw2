@@ -25,7 +25,6 @@
 
 extern uint64_t get_cycles(void);
 extern uint64_t get_instret(void);
-// extern int clz(uint32_t x);
 
 
 /* Bare metal strlen implementation */
@@ -242,16 +241,17 @@ void print_dec(unsigned long val)
  */
 
 // implement in compute.S assembler version
-static int clz(uint32_t x) {
-    if (!x) return 32; /* Special case: no bits set */
-    int n = 0;
-    if (!(x & 0xFFFF0000)) { n += 16; x <<= 16; }
-    if (!(x & 0xFF000000)) { n += 8; x <<= 8; }
-    if (!(x & 0xF0000000)) { n += 4; x <<= 4; }
-    if (!(x & 0xC0000000)) { n += 2; x <<= 2; }
-    if (!(x & 0x80000000)) { n += 1; }
-    return n;
-}
+extern int clz(uint32_t x);
+// static int clz(uint32_t x) {
+//     if (!x) return 32; /* Special case: no bits set */
+//     int n = 0;
+//     if (!(x & 0xFFFF0000)) { n += 16; x <<= 16; }
+//     if (!(x & 0xFF000000)) { n += 8; x <<= 8; }
+//     if (!(x & 0xF0000000)) { n += 4; x <<= 4; }
+//     if (!(x & 0xC0000000)) { n += 2; x <<= 2; }
+//     if (!(x & 0x80000000)) { n += 1; }
+//     return n;
+// }
 
 
 /* Implement 32x32 -> 64-bit multiplication without hardware MUL instruction
@@ -343,18 +343,18 @@ uint32_t fast_rsqrt(uint32_t x)
     int exp = 31 - clz(x); // Count leading zeros
     uint32_t y = rsqrt_table[exp]; // Initial estimate
 
-    // Step 2: Linear interpolation for non-power-of-2 inputs
     if (x > (1u << exp)) {
+    // Step 2: Linear interpolation for non-power-of-2 inputs
         uint32_t y_next = (exp < 31) ? rsqrt_table[exp + 1] : 0; // Next estimate
         uint32_t delta = y - y_next; // Difference between estimates
         uint32_t frac =(uint32_t) ((((uint64_t)x - (1UL << exp)) << 16) >> exp);
         y -= (uint32_t) ((delta * frac) >> 16); // Interpolate
-    }
-    
-    for (int iter = 0; iter < 2; iter++) {
-        uint32_t y2 = (uint32_t)mul32(y, y); // y^2 in Q0.32
-        uint32_t xy2 = (uint32_t)(mul32(x, y2) >> 16); // x * y^2 in Q16.16
-        y = (uint32_t)(mul32(y, (3u << 16) - xy2) >> 17); // Newton step
+    // Step 3: Newton-Raphson iterations
+        for (int iter = 0; iter < 2; iter++) {
+            uint32_t y2 = (uint32_t)mul32(y, y); // y^2 in Q0.32
+            uint32_t xy2 = (uint32_t)(mul32(x, y2) >> 16); // x * y^2 in Q16.16
+            y = (uint32_t)(mul32(y, (3u << 16) - xy2) >> 17); // Newton step
+        }
     }
 
     return y;
