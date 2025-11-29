@@ -1,0 +1,6 @@
+.vscode/
+rsqrt.c
+*.o
+*.elf
+*.ld
+Makefile
