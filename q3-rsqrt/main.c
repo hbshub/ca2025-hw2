@@ -265,14 +265,15 @@ extern int clz(uint32_t x);
  * Hint: Use a loop from i=0 to i=31, check if bit i is set in b,
  * then add (a << i) to the result.
  */
-static uint64_t mul32(uint32_t a, uint32_t b) {
-    uint64_t r = 0;
-    for (int i = 0; i < 32; i++) {
-        if (b & ( 1U << i ))
-            r += (uint64_t)a << i ;
-    }
-    return r;
-}
+extern uint64_t mul32(uint32_t a, uint32_t b);
+// static uint64_t mul32(uint32_t a, uint32_t b) {
+//     uint64_t r = 0;
+//     for (int i = 0; i < 32; i++) {
+//         if (b & ( 1U << i ))
+//             r += (uint64_t)a << i ;
+//     }
+//     return r;
+// }
 
 /* Software 64-bit by 32-bit division */
 static uint64_t udiv64_32(uint64_t dividend, uint32_t divisor_u32)
