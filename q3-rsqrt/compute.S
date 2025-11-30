@@ -45,6 +45,61 @@ is_zero:
     ret
 
 
+
+.global clz_brless
+# -----------------------------------------------------------------------
+# clz_branchless_binary
+# Branchless CLZ implementation using a binary search pattern.
+# Input:  a0
+# Output: a0
+# -----------------------------------------------------------------------
+clz_brless:
+    # Preserve original input for zero correction
+    mv      t5, a0
+    
+    # Initialize counter
+    li      t0, 0
+
+    # Check upper 16 bits
+    srli    t1, a0, 16
+    sltiu   t2, t1, 1        # t2 = (t1 == 0)
+    slli    t3, t2, 4        # shift amount = 16 or 0
+    add     t0, t0, t3
+    sll     a0, a0, t3
+
+    # Check upper 8 bits
+    srli    t1, a0, 24
+    sltiu   t2, t1, 1
+    slli    t3, t2, 3        # shift amount = 8 or 0
+    add     t0, t0, t3
+    sll     a0, a0, t3
+
+    # Check upper 4 bits
+    srli    t1, a0, 28
+    sltiu   t2, t1, 1
+    slli    t3, t2, 2        # shift amount = 4 or 0
+    add     t0, t0, t3
+    sll     a0, a0, t3
+
+    # Check upper 2 bits
+    srli    t1, a0, 30
+    sltiu   t2, t1, 1
+    slli    t3, t2, 1        # shift amount = 2 or 0
+    add     t0, t0, t3
+    sll     a0, a0, t3
+
+    # Check MSB
+    srli    t1, a0, 31
+    sltiu   t2, t1, 1
+    add     t0, t0, t2
+
+    # Zero-input adjustment (CLZ(0) = 32)
+    seqz    t4, t5
+    add     a0, t0, t4
+    
+    ret
+
+
 .global mul32
 # -----------------------------------------------------------------------
 # mul32: Unsigned 32x32 -> 64-bit multiplication

@@ -241,17 +241,18 @@ void print_dec(unsigned long val)
  */
 
 // implement in compute.S assembler version
-extern int clz(uint32_t x);
-// static int clz(uint32_t x) {
-//     if (!x) return 32; /* Special case: no bits set */
-//     int n = 0;
-//     if (!(x & 0xFFFF0000)) { n += 16; x <<= 16; }
-//     if (!(x & 0xFF000000)) { n += 8; x <<= 8; }
-//     if (!(x & 0xF0000000)) { n += 4; x <<= 4; }
-//     if (!(x & 0xC0000000)) { n += 2; x <<= 2; }
-//     if (!(x & 0x80000000)) { n += 1; }
-//     return n;
-// }
+// extern int clz(uint32_t x);
+// extern int clz_brless(uint32_t x);
+static int clz(uint32_t x) {
+    if (!x) return 32; /* Special case: no bits set */
+    int n = 0;
+    if (!(x & 0xFFFF0000)) { n += 16; x <<= 16; }
+    if (!(x & 0xFF000000)) { n += 8; x <<= 8; }
+    if (!(x & 0xF0000000)) { n += 4; x <<= 4; }
+    if (!(x & 0xC0000000)) { n += 2; x <<= 2; }
+    if (!(x & 0x80000000)) { n += 1; }
+    return n;
+}
 
 
 /* Implement 32x32 -> 64-bit multiplication without hardware MUL instruction
